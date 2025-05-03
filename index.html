@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pemesanan Tiket Bioskop</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+      color: #333;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      margin-top: 20px;
+      background-color: #ffffff;
+      border: 1px solid #ddd;
+      transition: all 0.3s ease;
+    }
+
+    .container:hover {
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: #2e86de;
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    label {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    select, button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background-color: #f9f9f9;
+      transition: 0.3s;
+    }
+
+    select:focus, button:focus {
+      outline: none;
+      border-color: #2e86de;
+      background-color: #e0f7fa;
+    }
+
+    button {
+      background-color: #2e86de;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+    }
+
+    button:hover {
+      background-color: #2166c0;
+      transform: translateY(-3px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .screen {
+      background-color: #ddd;
+      padding: 15px;
+      margin: 30px 0;
+      text-align: center;
+      font-weight: bold;
+      border-radius: 8px;
+      color: #555;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .seat-container {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .seat {
+      background-color: #e0e0e0;
+      padding: 20px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      text-align: center;
+      color: #333;
+    }
+
+    .seat:hover {
+      background-color: #b0c4de;
+      transform: scale(1.1);
+    }
+
+    .seat.selected {
+      background-color: #2ecc71;
+      color: white;
+    }
+
+    .seat.taken {
+      background-color: #e74c3c;
+      color: white;
+      cursor: not-allowed;
+    }
+
+    .full-message {
+      font-size: 16px;
+      font-weight: bold;
+      color: red;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    #result {
+      background: #f4f4f4;
+      border-left: 4px solid #2ecc71;
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-top: 30px;
+      color: #333;
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #777;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🎬 Pemesanan Tiket Bioskop</h1>
+
+    <label for="film">Pilih Film</label>
+    <select id="film" onchange="updateJadwal()">
+      <option value="0">Avengers: Endgame - Rp50.000</option>
+      <option value="1">Spider-Man: No Way Home - Rp45.000</option>
+      <option value="2">Dune - Rp55.000</option>
+      <option value="3">Batman: The Dark Knight - Rp60.000</option>
+      <option value="4">Guardians of the Galaxy Vol. 3 - Rp55.000</option>
+    </select>
+
+    <label for="jadwal">Pilih Jadwal</label>
+    <select id="jadwal"></select>
+
+    <div class="screen">Layar</div>
+
+    <div class="seat-container" id="seat-container"></div>
+
+    <button onclick="prosesPembelian()">Beli Tiket</button>
+
+    <div id="result"></div>
+    <div id="full-message" class="full-message"></div>
+
+    <div class="footer">© 2025 BioskopOnline</div>
+  </div>
+
+  <script>
+    const films = [
+      { 
+        judul: "Avengers: Endgame", 
+        harga: 50000, 
+        jadwal: ["12:00", "15:00", "18:00"],
+        takenSeats: ['A1', 'B3', 'C4']
+      },
+      { 
+        judul: "Spider-Man: No Way Home", 
+        harga: 45000, 
+        jadwal: ["13:00", "16:00", "19:00"],
+        takenSeats: ['A2', 'B1', 'D5']
+      },
+      { 
+        judul: "Dune", 
+        harga: 55000, 
+        jadwal: ["14:00", "17:00", "20:00"],
+        takenSeats: ['B2', 'C5', 'D4']
+      },
+      { 
+        judul: "Batman: The Dark Knight", 
+        harga: 60000, 
+        jadwal: ["10:00", "13:00", "16:00"],
+        takenSeats: ['A3', 'C1', 'D2']
+      },
+      { 
+        judul: "Guardians of the Galaxy Vol. 3", 
+        harga: 55000, 
+        jadwal: ["11:00", "14:00", "17:00"],
+        takenSeats: ['A4', 'B5', 'C3']
+      }
+    ];
+
+    const seatContainer = document.getElementById("seat-container");
+    let selectedSeats = [];
+
+    function createSeats() {
+      seatContainer.innerHTML = "";
+      const rows = ["A", "B", "C", "D"];
+      const cols = [1, 2, 3, 4, 5];
+
+      const filmIndex = document.getElementById("film").value;
+      const takenSeats = films[filmIndex].takenSeats;
+
+      rows.forEach(row => {
+        cols.forEach(col => {
+          const seatId = row + col;
+          const seat = document.createElement("button");
+          seat.classList.add("seat");
+
+          if (takenSeats.includes(seatId)) {
+            seat.classList.add("taken");
+            seat.disabled = true;
+            seat.textContent = seatId;
+          } else {
+            seat.textContent = seatId;
+            seat.onclick = () => toggleSeat(seat);
+          }
+
+          seatContainer.appendChild(seat);
+        });
+      });
+
+      checkFullSeats();
+    }
+
+    function toggleSeat(seat) {
+      const seatId = seat.textContent;
+      if (seat.classList.contains("selected")) {
+        seat.classList.remove("selected");
+        selectedSeats = selectedSeats.filter(s => s !== seatId);
+      } else {
+        seat.classList.add("selected");
+        selectedSeats.push(seatId);
+      }
+    }
+
+    function updateJadwal() {
+      const filmIndex = document.getElementById("film").value;
+      const jadwalSelect = document.getElementById("jadwal");
+      jadwalSelect.innerHTML = "";
+      films[filmIndex].jadwal.forEach(j => {
+        let opt = document.createElement("option");
+        opt.text = j;
+        opt.value = j;
+        jadwalSelect.add(opt);
+      });
+
+      createSeats();
+    }
+
+    function checkFullSeats() {
+      const filmIndex = document.getElementById("film").value;
+      const availableSeats = 20 - films[filmIndex].takenSeats.length;
+      const fullMessage = document.getElementById("full-message");
+
+      if (availableSeats === 0) {
+        fullMessage.textContent = "Bioskop sudah penuh. Silakan pilih film lain.";
+      } else {
+        fullMessage.textContent = "";
+      }
+    }
+
+    function prosesPembelian() {
+      const filmIndex = document.getElementById("film").value;
+      const film = films[filmIndex];
+      const jadwal = document.getElementById("jadwal").value;
+      const jumlah = selectedSeats.length;
+
+      if (jumlah === 0) {
+        alert("Silakan pilih kursi terlebih dahulu.");
+        return;
+      }
+
+      const total = film.harga * jumlah;
+      const resultHTML = `
+        <strong>🎫 Detail Pembelian:</strong><br><br>
+        Film: ${film.judul}<br>
+        Jadwal: ${jadwal}<br>
+        Kursi: ${selectedSeats.join(", ")}<br>
+        Jumlah Tiket: ${jumlah}<br>
+        Total: Rp${total.toLocaleString()}<br>
+        <br>✅ Pemesanan berhasil.
+      `;
+      document.getElementById("result").innerHTML = resultHTML;
+    }
+
+    updateJadwal();
+    createSeats();
+  </script>
+</body>
+</html>
